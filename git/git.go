@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/bitrise-io/go-utils/command"
-	version "github.com/hashicorp/go-version"
 )
 
 const (
@@ -85,8 +84,8 @@ func parseCommit(out string) (Commit, error) {
 	}, nil
 }
 
-// VersionTaggedCommits ...
-func VersionTaggedCommits(repoDir string) ([]Commit, error) {
+// TaggedCommits ...
+func TaggedCommits(repoDir string) ([]Commit, error) {
 	cmd := command.New("git", "tag", "--list").SetDir(repoDir)
 	out, err := cmd.RunAndReturnTrimmedCombinedOutput()
 	if err != nil {
@@ -96,11 +95,6 @@ func VersionTaggedCommits(repoDir string) ([]Commit, error) {
 	var taggedCommits []Commit
 	for _, tag := range strings.Split(out, "\n") {
 		tag = strings.TrimSpace(tag)
-
-		// is tag sem-ver tag?
-		if _, err := version.NewVersion(tag); err != nil {
-			continue
-		}
 
 		cmd := command.New("git", "rev-list", "-n", "1", `--pretty=format:commit: %H%ndate: %ct%nauthor: %an%nmessage: %s`, tag).SetDir(repoDir)
 		out, err := cmd.RunAndReturnTrimmedCombinedOutput()

@@ -1,14 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/bitrise-io/go-utils/fileutil"
 	"github.com/bitrise-io/go-utils/log"
+	"github.com/bitrise-steplib/steps-generate-changelog/git"
+	"github.com/bitrise-tools/go-steputils/stepconf"
 	"github.com/bitrise-tools/go-steputils/tools"
-	"github.com/godrei/steps-generate-changelog/git"
-	version "github.com/hashicorp/go-version"
 )
 
 func failf(format string, args ...interface{}) {
@@ -16,55 +15,28 @@ func failf(format string, args ...interface{}) {
 	os.Exit(1)
 }
 
-func releaseCommits(newVersion string) ([]git.Commit, error) {
-	ver, err := version.NewVersion(newVersion)
+func releaseCommits(dir, newVersion string) ([]git.Commit, error) {
+	startCommit, err := git.FirstCommit(dir)
 	if err != nil {
 		return nil, err
 	}
 
-	dir, err := os.Getwd()
+	endCommit, err := git.LastCommit(dir)
 	if err != nil {
 		return nil, err
 	}
 
-	firstCommit, err := git.FirstCommit(dir)
+	taggedCommits, err := git.TaggedCommits(dir)
 	if err != nil {
 		return nil, err
 	}
 
-	lastCommit, err := git.LastCommit(dir)
-	if err != nil {
-		return nil, err
-	}
-
-	taggedCommits, err := git.VersionTaggedCommits(dir)
-	if err != nil {
-		return nil, err
-	}
-
-	startCommit := firstCommit
 	includeFirst := true
-	endCommit := lastCommit
-	if len(taggedCommits) > 0 {
-		lastTaggedCommit := taggedCommits[len(taggedCommits)-1]
-		lastVersion, err := version.NewVersion(lastTaggedCommit.Tag)
-		if err != nil {
-			return nil, err
-		}
-
-		if ver.LessThan(lastVersion) {
-			// collecting previous changelogs
-			return nil, fmt.Errorf("new version (%s) is less then the most recent tag (%s)", ver, lastTaggedCommit.Tag)
-		} else if ver.GreaterThan(lastVersion) {
-			// collecting changelog for a new version
-			startCommit = taggedCommits[len(taggedCommits)-1]
-			includeFirst = false
-		} else if len(taggedCommits) > 1 {
-			// collecting changelog between existing versions
-			startCommit = taggedCommits[len(taggedCommits)-2]
-			endCommit = taggedCommits[len(taggedCommits)-1]
-			includeFirst = false
-		}
+	if len(taggedCommits) > 1 {
+		// collecting changelog between existing versions
+		startCommit = taggedCommits[len(taggedCommits)-2]
+		endCommit = taggedCommits[len(taggedCommits)-1]
+		includeFirst = false
 	}
 
 	commits, err := git.Commits(dir)
@@ -89,41 +61,38 @@ func releaseCommits(newVersion string) ([]git.Commit, error) {
 	return releaseCommits, nil
 }
 
+// Config ...
+type Config struct {
+	NewVersion    string `env:"new_version,required"`
+	ChangelogPath string `env:"changelog_pth,required"`
+	WorkDir       string `env:"working_dir,required"`
+}
+
 func main() {
-	version := os.Getenv("new_version")
-	changelogPth := os.Getenv("changelog_pth")
-
-	log.Infof("Configs:")
-	log.Printf("new_version: %s", version)
-	log.Printf("changelog_pth: %s", changelogPth)
-
-	if version == "" {
-		failf("Next version not defined")
+	var c Config
+	if err := stepconf.Parse(&c); err != nil {
+		failf("Failed to parse configs, error: %s", err)
 	}
 
-	if changelogPth == "" {
-		failf("Changelog path not defined")
-	}
-
-	commits, err := releaseCommits(version)
+	commits, err := releaseCommits(c.WorkDir, c.NewVersion)
 	if err != nil {
-		panic(err)
+		failf("Failed to get release commits, error: %s", err)
 	}
 
-	changelog, err := ChangelogContent(commits, version)
+	changelog, err := changelogContent(commits, c.NewVersion)
 	if err != nil {
-		panic(err)
+		failf("Failed to get changelog content, error: %s", err)
 	}
 
-	if err := fileutil.WriteStringToFile(changelogPth, changelog); err != nil {
-
+	if err := fileutil.WriteStringToFile(c.ChangelogPath, changelog); err != nil {
+		failf("Failed to write changelog to (%s), error: %s", c.ChangelogPath, err)
 	}
 
 	log.Infof("\nChangelog:")
 	log.Printf(changelog)
 
 	if err := tools.ExportEnvironmentWithEnvman("BITRISE_CHANGELOG", changelog); err != nil {
-		failf("Failed to export changelog: %s", err)
+		failf("Failed to export changelog to (BITRISE_CHANGELOG), error: %s", err)
 	}
 
 	log.Donef("\nThe changelog content is available in the BITRISE_CHANGELOG environment variable")

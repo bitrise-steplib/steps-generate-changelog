@@ -18,15 +18,16 @@ workflows:
     - path::./:
         title: Step Test
         inputs:
-        - new_version: 0.9.0
+        - new_version: 1.0.$BITRISE_BUILD_NUMBER
+        - working_dir: "/Users/tamaspapik/Develop/go/src/github.com/bitrise-core/bitrise-init"
     - script:
         title: Output test
         inputs:
         - content: |-
             echo '$BITRISE_CHANGELOG='
-            echo $BITRISE_CHANGELOG
+            echo "$BITRISE_CHANGELOG"
             if [[ -z $BITRISE_CHANGELOG ]] ; then
-              echo "empty $BITRISE_CHANGELOG"
+              echo 'empty $BITRISE_CHANGELOG'
               exit 1
             fi
 

@@ -1,18 +1,16 @@
 title: Generate Changelog
-summary: Genereates Changelog based on git commits
+summary: Generates changelog based on git commits
 description: |-
-  Genereates Changelog based on git commits.
+  Genereates changelog based on git commits.
 
-  The step collects the latest commits till the new version.
-
-  __NOTE: All tags needs to be semver version tags (0.9.0).__
+  The step collects commits since the latest tag.
 
   In case of first tag, the commits are from the first commit till the new version.
   In other cases the first commit is the first commit after the previous tag.
 
-website: https://github.com/godrei/steps-generate-changelog
-source_code_url: https://github.com/godrei/steps-generate-changelog
-support_url: https://github.com/godrei/steps-generate-changelog/issues
+website: https://github.com/bitrise-steplib/steps-generate-changelog
+source_code_url: https://github.com/bitrise-steplib/steps-generate-changelog
+support_url: https://github.com/bitrise-steplib/steps-generate-changelog/issues
 
 type_tags:
   - utility
@@ -24,7 +22,7 @@ run_if: ""
 
 toolkit:
   go:
-    package_name: github.com/godrei/steps-generate-changelog
+    package_name: github.com/bitrise-steplib/steps-generate-changelog
 
 inputs:
   - new_version: $BITRISE_GIT_TAG
@@ -38,6 +36,12 @@ inputs:
       title: "Changelog path"
       summary: Changelog path
       description: Changelog path.
+      is_required: true
+  - working_dir: $BITRISE_SOURCE_DIR
+    opts:
+      title: "Working dir"
+      summary: The directory path where your git repository is initialized.
+      description: The directory path where your git repository is initialized.
       is_required: true
 outputs:
   - BITRISE_CHANGELOG: 

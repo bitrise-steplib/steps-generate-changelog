@@ -10,25 +10,24 @@
     "errorutil",
     "fileutil",
     "log",
-    "pathutil"
+    "parseutil",
+    "pathutil",
+    "pointers"
   ]
-  revision = "b33f6bcef9b50045d7e62364b354584afc3ee329"
+  revision = "d1de0dbcb811588e61362aff67bb700b93c13c17"
 
 [[projects]]
   branch = "master"
   name = "github.com/bitrise-tools/go-steputils"
-  packages = ["tools"]
+  packages = [
+    "stepconf",
+    "tools"
+  ]
   revision = "d4d9e08cc4347e8784bb18419fcdceb932e17019"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/hashicorp/go-version"
-  packages = ["."]
-  revision = "23480c0665776210b5fbbac6eaaee40e3e6a96b7"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "101e1c5017743442a03f94d7f18abc6aa963ed06219e302d39764fce39495681"
+  inputs-digest = "bd96ef776fd8d46386b22a8a0777efd8725f50e09a98a5c75205bd9c2a108c7d"
   solver-name = "gps-cdcl"
   solver-version = 1
