@@ -19,7 +19,6 @@ workflows:
         title: Step Test
         inputs:
         - new_version: 1.0.$BITRISE_BUILD_NUMBER
-        - working_dir: "/Users/tamaspapik/Develop/go/src/github.com/bitrise-core/bitrise-init"
     - script:
         title: Output test
         inputs:
@@ -43,7 +42,7 @@ workflows:
 
   release:
     envs:
-    - BITRISE_STEP_GIT_CLONE_URL: https://github.com/godrei/generate-changelog.git
+    - BITRISE_STEP_GIT_CLONE_URL: https://github.com/bitrise-steplib/steps-generate-changelog.git
     - BITRISE_STEP_ID: generate-changelog
     - BITRISE_STEP_VERSION: $BITRISE_GIT_TAG
     - BITRISE_GITHUB_API_TOKEN: $BITRISE_GITHUB_API_TOKEN
@@ -51,10 +50,10 @@ workflows:
     before_run:
     - test
     steps:
-    - git::https://github.com/godrei/steps-generate-changelog@master:
+    - steps-generate-changelog:
         inputs:
         - new_version: $BITRISE_STEP_VERSION
-    - git::https://github.com/godrei/steps-github-release@master:
+    - steps-github-release:
         inputs:
         - api_token: $BITRISE_GITHUB_API_TOKEN
         - repository_url: $BITRISE_STEP_GIT_CLONE_URL
