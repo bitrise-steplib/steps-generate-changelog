@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/bitrise-io/go-utils/command"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -23,7 +24,7 @@ func parseDate(unixTimeStampStr string) (time.Time, error) {
 		return time.Time{}, err
 	}
 	if i < 0 {
-		return time.Time{}, fmt.Errorf("invalid time stamp (%s)", unixTimeStampStr)
+		return time.Time{}, errors.WithStack(fmt.Errorf("invalid time stamp (%s)", unixTimeStampStr))
 	}
 	return time.Unix(i, 0), nil
 }
@@ -68,7 +69,7 @@ func parseCommit(out string) (Commit, error) {
 	}
 
 	if hash == "" || dateStr == "" || author == "" {
-		return Commit{}, fmt.Errorf("missing 'date: ' / 'author: ' / 'commit: ' fields in: %s", out)
+		return Commit{}, errors.WithStack(fmt.Errorf("missing 'date: ' / 'author: ' / 'commit: ' fields in: %s", out))
 	}
 
 	date, err := parseDate(dateStr)
@@ -89,7 +90,11 @@ func TaggedCommits(repoDir string) ([]Commit, error) {
 	cmd := command.New("git", "tag", "--list").SetDir(repoDir)
 	out, err := cmd.RunAndReturnTrimmedCombinedOutput()
 	if err != nil {
-		return nil, fmt.Errorf("%s failed: %s", cmd.PrintableCommandArgs(), out)
+		return nil, errors.WithStack(fmt.Errorf("%s failed: %s", cmd.PrintableCommandArgs(), out))
+	}
+
+	if out == "" {
+		return nil, nil
 	}
 
 	var taggedCommits []Commit
@@ -99,12 +104,12 @@ func TaggedCommits(repoDir string) ([]Commit, error) {
 		cmd := command.New("git", "rev-list", "-n", "1", `--pretty=format:commit: %H%ndate: %ct%nauthor: %an%nmessage: %s`, tag).SetDir(repoDir)
 		out, err := cmd.RunAndReturnTrimmedCombinedOutput()
 		if err != nil {
-			return nil, fmt.Errorf("%s failed: %s", cmd.PrintableCommandArgs(), out)
+			return nil, errors.WithStack(fmt.Errorf("%s failed: %s", cmd.PrintableCommandArgs(), out))
 		}
 
 		commit, err := parseCommit(out)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to parse commit: %#v", err)
+			return nil, errors.WithStack(fmt.Errorf("Failed to parse commit: %#v", err))
 		}
 		commit.Tag = tag
 
@@ -122,7 +127,7 @@ func FirstCommit(repoDir string) (Commit, error) {
 	cmd := command.New("git", "rev-list", "--max-parents=0", `--pretty=format:commit: %H%ndate: %ct%nauthor: %an%nmessage: %s`, "HEAD").SetDir(repoDir)
 	out, err := cmd.RunAndReturnTrimmedCombinedOutput()
 	if err != nil {
-		return Commit{}, fmt.Errorf("%s failed: %s", cmd.PrintableCommandArgs(), out)
+		return Commit{}, errors.WithStack(fmt.Errorf("%s failed: %s", cmd.PrintableCommandArgs(), out))
 	}
 	return parseCommit(out)
 }
@@ -132,7 +137,7 @@ func LastCommit(repoDir string) (Commit, error) {
 	cmd := command.New("git", "log", "-1", `--pretty=format:commit: %H%ndate: %ct%nauthor: %an%nmessage: %s`).SetDir(repoDir)
 	out, err := cmd.RunAndReturnTrimmedCombinedOutput()
 	if err != nil {
-		return Commit{}, fmt.Errorf("%s failed: %s", cmd.PrintableCommandArgs(), out)
+		return Commit{}, errors.WithStack(fmt.Errorf("%s failed: %s", cmd.PrintableCommandArgs(), out))
 	}
 	return parseCommit(out)
 }
@@ -210,7 +215,7 @@ func Commits(repoDir string) ([]Commit, error) {
 	cmd := command.New("git", "log", `--pretty=format:commit: %H%ndate: %ct%nauthor: %an%nmessage: %s`).SetDir(repoDir)
 	out, err := cmd.RunAndReturnTrimmedCombinedOutput()
 	if err != nil {
-		return nil, fmt.Errorf("%s failed: %s", cmd.PrintableCommandArgs(), out)
+		return nil, errors.WithStack(fmt.Errorf("%s failed: %s", cmd.PrintableCommandArgs(), out))
 	}
 
 	commits, err := parseCommitList(out)

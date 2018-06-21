@@ -8,6 +8,7 @@ import (
 	"github.com/bitrise-steplib/steps-generate-changelog/git"
 	"github.com/bitrise-tools/go-steputils/stepconf"
 	"github.com/bitrise-tools/go-steputils/tools"
+	"github.com/pkg/errors"
 )
 
 func failf(format string, args ...interface{}) {
@@ -18,17 +19,17 @@ func failf(format string, args ...interface{}) {
 func releaseCommits(dir, newVersion string) ([]git.Commit, error) {
 	startCommit, err := git.FirstCommit(dir)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	endCommit, err := git.LastCommit(dir)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	taggedCommits, err := git.TaggedCommits(dir)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	includeFirst := true
@@ -41,7 +42,7 @@ func releaseCommits(dir, newVersion string) ([]git.Commit, error) {
 
 	commits, err := git.Commits(dir)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	var releaseCommits []git.Commit
@@ -73,10 +74,11 @@ func main() {
 	if err := stepconf.Parse(&c); err != nil {
 		failf("Failed to parse configs, error: %s", err)
 	}
+	stepconf.Print(c)
 
 	commits, err := releaseCommits(c.WorkDir, c.NewVersion)
 	if err != nil {
-		failf("Failed to get release commits, error: %s", err)
+		failf("Failed to get release commits, error: %v", err)
 	}
 
 	changelog, err := changelogContent(commits, c.NewVersion)
