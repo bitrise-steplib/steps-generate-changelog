@@ -22,22 +22,21 @@ var tmplFuncMap = template.FuncMap{
 	},
 }
 
-type changelogPrinter interface {
-	content() (string, error)
-}
-
 type changelog struct {
 	Commits     []git.Commit
 	Version     string
-	currentDate time.Time
+	CurrentDate time.Time
 }
 
-func (cl *changelog) content() (string, error) {
-	sort.Slice(cl.Commits, func(i, j int) bool {
-		return cl.Commits[i].Date.After(cl.Commits[j].Date)
+func changelogContent(commits []git.Commit, version string) (string, error) {
+	sort.Slice(commits, func(i, j int) bool {
+		return commits[i].Date.After(commits[j].Date)
 	})
-
-	cl.currentDate = time.Now()
+	chlog := changelog{
+		Commits:     commits,
+		Version:     version,
+		CurrentDate: time.Now(),
+	}
 
 	tmplStr := changelogTmplStr
 	tmpl := template.New("changelog_content").Funcs(tmplFuncMap)
@@ -47,8 +46,7 @@ func (cl *changelog) content() (string, error) {
 	}
 
 	var buff bytes.Buffer
-	err = tmpl.Execute(&buff, cl)
-	if err != nil {
+	if err := tmpl.Execute(&buff, chlog); err != nil {
 		return "", err
 	}
 
