@@ -46,8 +46,7 @@ func changelogContent(commits []git.Commit, version string) (string, error) {
 	}
 
 	var buff bytes.Buffer
-	err = tmpl.Execute(&buff, chlog)
-	if err != nil {
+	if err := tmpl.Execute(&buff, chlog); err != nil {
 		return "", err
 	}
 

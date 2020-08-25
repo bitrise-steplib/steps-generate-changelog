@@ -1,15 +1,17 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
-	"github.com/bitrise-io/go-utils/fileutil"
 	"github.com/bitrise-io/go-utils/log"
+	"github.com/bitrise-steplib/steps-generate-changelog/exporter"
 	"github.com/bitrise-steplib/steps-generate-changelog/git"
 	"github.com/bitrise-tools/go-steputils/stepconf"
-	"github.com/bitrise-tools/go-steputils/tools"
 	"github.com/pkg/errors"
 )
+
+const changelogContentEnvKey = "BITRISE_CHANGELOG"
 
 func failf(format string, args ...interface{}) {
 	log.Errorf(format, args...)
@@ -69,6 +71,41 @@ type Config struct {
 	WorkDir       string `env:"working_dir,required"`
 }
 
+type outputExporter interface {
+	EnvKey() string
+	Filepath() string
+	WriteFile(content string) error
+	ExportEnv(value string) error
+	MaxEnvBytes() (int, error)
+}
+
+func exportChangelog(changelog string, e outputExporter) error {
+	if err := e.WriteFile(changelog); err != nil {
+		return fmt.Errorf("unable to write changelog to (%s), error: %s", e.Filepath(), err)
+	}
+
+	maxEnvBytes, err := e.MaxEnvBytes()
+	if err != nil {
+		return fmt.Errorf("unable to load envman configs, error: %s", err)
+	}
+
+	if maxEnvBytes > 0 {
+		if len(changelog) > maxEnvBytes {
+			log.Warnf("Changelog content exceeds the maximum allowed size to set in an environment variable. (%dKB)", maxEnvBytes/1024)
+			log.Warnf("The changelog's content will be trimmed to fit the maximum allowed size.")
+			log.Warnf("It is possible to modify the limit by following this guide: https://devcenter.bitrise.io/tips-and-tricks/increasing-the-size-limit-of-env-vars")
+			log.Warnf("or you can use the exported changelog file(%s) also.", e.Filepath())
+			changelog = changelog[:maxEnvBytes-4] + "\n..."
+		}
+	}
+
+	if err := e.ExportEnv(changelog); err != nil {
+		return fmt.Errorf("unable to export environment variable with envman (%s), error: %s", e.EnvKey(), err)
+	}
+
+	return nil
+}
+
 func main() {
 	var c Config
 	if err := stepconf.Parse(&c); err != nil {
@@ -81,21 +118,17 @@ func main() {
 		failf("Failed to get release commits, error: %v", err)
 	}
 
-	changelog, err := changelogContent(commits, c.NewVersion)
+	content, err := changelogContent(commits, c.NewVersion)
 	if err != nil {
 		failf("Failed to get changelog content, error: %s", err)
 	}
 
-	if err := fileutil.WriteStringToFile(c.ChangelogPath, changelog); err != nil {
-		failf("Failed to write changelog to (%s), error: %s", c.ChangelogPath, err)
-	}
-
 	log.Infof("\nChangelog:")
-	log.Printf(changelog)
+	log.Printf(content)
 
-	if err := tools.ExportEnvironmentWithEnvman("BITRISE_CHANGELOG", changelog); err != nil {
-		failf("Failed to export changelog to (BITRISE_CHANGELOG), error: %s", err)
+	if err := exportChangelog(content, exporter.New(changelogContentEnvKey, c.ChangelogPath)); err != nil {
+		failf("Failed to export changelog: %s", err)
 	}
 
-	log.Donef("\nThe changelog content is available in the BITRISE_CHANGELOG environment variable")
+	log.Donef("\nThe changelog content is available in the " + changelogContentEnvKey + " environment variable")
 }
