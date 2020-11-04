@@ -29,7 +29,7 @@ func releaseCommits(dir, newVersion string) ([]git.Commit, error) {
 		return nil, errors.WithStack(err)
 	}
 
-	taggedCommits, err := git.TaggedCommits(dir)
+	taggedCommits, err := git.TaggedCommits(dir, endCommit.Date)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
