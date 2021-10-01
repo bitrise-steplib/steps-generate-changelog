@@ -212,7 +212,7 @@ func parseCommitList(out string) ([]Commit, error) {
 
 // Commits ...
 func Commits(repoDir string) ([]Commit, error) {
-	cmd := command.New("git", "log", `--pretty=format:commit: %H%ndate: %ct%nauthor: %an%nmessage: %s`).SetDir(repoDir)
+	cmd := command.New("git", "log", `--no-merges --pretty=format:commit: %H%ndate: %ct%nauthor: %an%nmessage: %s`).SetDir(repoDir)
 	out, err := cmd.RunAndReturnTrimmedCombinedOutput()
 	if err != nil {
 		return nil, errors.WithStack(fmt.Errorf("%s failed: %s", cmd.PrintableCommandArgs(), out))
