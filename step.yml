@@ -3,7 +3,7 @@ summary: Generates changelog based on git commits
 description: |-
   Generates changelog based on git commits.
 
-  The step collects commits since the latest tag.
+  The step collects commits since the latest tag, ignoring merge commits.
 
   In the case of the first tag, the commits are from the first commit, till there is a new version.
   In other cases, the first commit is the first commit after the previous tag.
