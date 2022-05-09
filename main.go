@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/bitrise-io/go-steputils/stepconf"
 	"github.com/bitrise-io/go-utils/log"
 	"github.com/bitrise-steplib/steps-generate-changelog/exporter"
 	"github.com/bitrise-steplib/steps-generate-changelog/git"
-	"github.com/bitrise-tools/go-steputils/stepconf"
 	"github.com/pkg/errors"
 )
 
