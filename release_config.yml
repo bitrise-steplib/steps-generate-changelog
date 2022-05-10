@@ -9,5 +9,5 @@ changelog:
     {{range .Commits}}* [{{firstChars .Hash 7}}] {{.Message}}
     {{end}}
     {{end}}
-  header_template: '## Changelog (Current version: {{.Version}})'
-  footer_template: 'Updated: {{.CurrentDate.Format "2006 Jan 02"}}'
+  header_template: "## Changelog (Current version: {{.Version}})"
+  footer_template: "Updated: {{.CurrentDate.Format '2006 Jan 02'}}"
