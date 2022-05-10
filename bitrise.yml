@@ -47,6 +47,24 @@ workflows:
               echo 'empty $BITRISE_CHANGELOG'
               exit 1
             fi
+    - script:
+        inputs:
+        - content: |-
+            #!/bin/env bash
+            set -ex
+
+            EXPECTED_CHANGELOG="* [6286925] Add --no-merges flag when fetching for commits (#17)
+            * [4a0c59d] Add renovate.json (#16)
+            * [c873384] Create stale issue management workflow (#15)
+            "
+
+            if [ "$BITRISE_CHANGELOG" = "$EXPECTED_CHANGELOG" ]; then
+                echo "Expected changelog generated."
+            else
+                echo "Invalid changelog generated:"
+                echo "$BITRISE_CHANGELOG"
+                exit 1
+            fi
 
   generate_readme:
     steps:

@@ -2,20 +2,19 @@ format_version: "11"
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
 app:
-  envs: 
+  envs:
   - BITRISE_BUILD_NUMBER: "9"
   - WORKDIR: ./_tmp
 
 workflows:
   test_generate_changelog_by_commit:
     envs:
-    - TEST_APP_URL: https://github.com/bitrise-steplib/steps-generate-changelog
+    - TEST_APP_URL: https://github.com/bitrise-steplib/bitrise-step-simple-git-clone
     - TEST_APP_BRANCH: master
-    - NEW_VERSION: 0.1.1
+    - NEW_VERSION: 0.0.1
     after_run:
     - _run
     - _check_changelog
-    
   _run:
     steps:
     - script:
@@ -23,32 +22,30 @@ workflows:
         - content: |-
             #!/bin/env bash
             set -ex
-            rm -rf ./_tmp
-    - git::https://github.com/bitrise-steplib/bitrise-step-simple-git-clone.git:
+            rm -rf $WORKDIR
+    - script:
         inputs:
-        - repository_url: $TEST_APP_URL
-        - clone_into_dir: ./_tmp
-        - branch: $TEST_APP_BRANCH
+        - content: |-
+            #!/bin/env bash
+            set -ex
+            mkdir -p $WORKDIR
+            cd $WORKDIR
+            git clone $TEST_APP_URL
     - path::./:
         inputs:
         - new_version: 1.0.$BITRISE_BUILD_NUMBER
         - clone_into_dir: $WORKDIR
-
   _check_changelog:
     steps:
-    - generate-changelog:
-        inputs:
-        - working_dir: $WORKDIR
-        - new_version: $NEW_VERSION
     - script:
         inputs:
         - content: |-
             #!/bin/env bash
             set -ex
 
-            EXPECTED_CHANGELOG="* [a409478] Add newline to the description.
-            * [b002ab7] Add repository description.
-            * [996fa77] Add newline to README.md.
+            EXPECTED_CHANGELOG="* [6286925] Add --no-merges flag when fetching for commits (#17)
+            * [4a0c59d] Add renovate.json (#16)
+            * [c873384] Create stale issue management workflow (#15)
             "
 
             if [ "$BITRISE_CHANGELOG" = "$EXPECTED_CHANGELOG" ]; then
