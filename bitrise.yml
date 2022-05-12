@@ -16,7 +16,7 @@ workflows:
     envs:
     - BITRISE_BUILD_NUMBER: 9
     - RELEASE_VERSION: 0.9.0
-    - TEST_APP_URL: https://github.com/bitrise-io/git-clone-test.git
+    - TEST_APP_URL: https://github.com/bitrise-io/iOS-Sample.git
     - TEST_APP_BRANCH: master
     steps:
     - script:
@@ -25,7 +25,7 @@ workflows:
             #!/bin/env bash
             set -ex
             rm -rf ./_tmp
-    - git::https://github.com/bitrise-steplib/bitrise-step-simple-git-clone.git:
+    - git::https://github.com/bitrise-io/iOS-Sample.git:
         inputs:
         - repository_url: $TEST_APP_URL
         - branch: $TEST_APP_BRANCH
