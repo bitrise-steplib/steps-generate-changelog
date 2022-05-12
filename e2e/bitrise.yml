@@ -34,7 +34,7 @@ workflows:
     - path::./:
         inputs:
         - new_version: 1.0.$BITRISE_BUILD_NUMBER
-        - clone_into_dir: $WORKDIR
+        - working_dir: $WORKDIR
   _check_changelog:
     steps:
     - script:
