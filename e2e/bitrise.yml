@@ -3,14 +3,13 @@ default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
 app:
   envs:
-  - BITRISE_BUILD_NUMBER: "9"
+  - TEST_APP_URL: https://github.com/bitrise-io/iOS-Sample.git
+  - TEST_APP_BRANCH: master
   - WORKDIR: ./_tmp
+
 
 workflows:
   test_generate_changelog_by_commit:
-    envs:
-    - TEST_APP_URL: https://github.com/bitrise-io/iOS-Sample.git
-    - TEST_APP_BRANCH: master
     after_run:
     - _run
     - _check_changelog
@@ -22,17 +21,17 @@ workflows:
             #!/bin/env bash
             set -ex
             rm -rf $WORKDIR
-    - script:
+    - git::https://github.com/bitrise-steplib/bitrise-step-simple-git-clone.git:
         inputs:
-        - content: |-
-            #!/bin/env bash
-            set -ex
-            mkdir -p $WORKDIR
-            cd $WORKDIR
-            git clone $TEST_APP_URL
-    - path::./_tmp:
+        - repository_url: $TEST_APP_URL
+        - branch: $TEST_APP_BRANCH
+        - clone_into_dir: $WORKDIR
+    - path::./:
+        title: Step Test
         inputs:
         - working_dir: $WORKDIR
+        - repository_url: $TEST_APP_URL
+        - branch: $TEST_APP_BRANCH
   _check_changelog:
     steps:
     - script:
@@ -41,22 +40,15 @@ workflows:
             #!/bin/env bash
             set -ex
 
-            EXPECTED_CHANGELOG="* [a64e9fc] Correcting version number.
-            * [b605f9f] Updated workdir.
-            * [a17e313] Updated envman, this removes unused x/sys dep
-            * [35c516b] Removed unused file.
-            * [dcb17cc] Corrected e2e test.
-            * [668dac7] Corrected sample test.
-            * [d9e52dd] Upgraded sys package.
-            * [d80089c] Migrated to module based deps.
-            * [f5a3e36] Update README.md (#19)
-            * [6286925] Add --no-merges flag when fetching for commits (#17)
-            * [4a0c59d] Add renovate.json (#16)
-            * [c873384] Create stale issue management workflow (#15)
-            * [262938c] dep-update + added test for env size + print warning (#8)
-            * [5e661fa] language check generate-changelog (#2)
-            * [0659829] initial version (#1)
-            * [69dc73b] Initial commit
+            EXPECTED_CHANGELOG="* [0648062] Bump git from 1.5.0 to 1.11.0
+            * [12633f8] Tool-248 firebase (#7)
+            * [9b77675] crashlitics
+            * [6f9cef3]  -
+            * [2777643]  -
+            * [dd88cd6] danger
+            * [ee76cdb] Scheme shared
+            * [89f7c82]  -
+            * [eb4f9b7] Initial Commit
             "
 
             if [ "$BITRISE_CHANGELOG" = "$EXPECTED_CHANGELOG" ]; then

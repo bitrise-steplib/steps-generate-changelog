@@ -14,27 +14,25 @@ workflows:
 
   sample:
     envs:
-    - BITRISE_BUILD_NUMBER: 9
-    - RELEASE_VERSION: 0.9.0
     - TEST_APP_URL: https://github.com/bitrise-io/iOS-Sample.git
     - TEST_APP_BRANCH: master
+    - WORKDIR: ./_tmp
     steps:
     - script:
         inputs:
         - content: |-
             #!/bin/env bash
             set -ex
-            rm -rf ./_tmp
-    - git::https://github.com/bitrise-io/iOS-Sample.git:
+            rm -rf $WORKDIR
+    - git::https://github.com/bitrise-steplib/bitrise-step-simple-git-clone.git:
         inputs:
         - repository_url: $TEST_APP_URL
         - branch: $TEST_APP_BRANCH
-        - clone_into_dir: ./_tmp
+        - clone_into_dir: $WORKDIR
     - path::./:
         title: Step Test
         inputs:
-        - new_version: 1.0.$BITRISE_BUILD_NUMBER
-        - clone_into_dir: .
+        - working_dir: $WORKDIR
         - repository_url: $TEST_APP_URL
         - branch: $TEST_APP_BRANCH
     - script:
@@ -53,9 +51,15 @@ workflows:
             #!/bin/env bash
             set -ex
 
-            EXPECTED_CHANGELOG="* [6286925] Add --no-merges flag when fetching for commits (#17)
-            * [4a0c59d] Add renovate.json (#16)
-            * [c873384] Create stale issue management workflow (#15)
+            EXPECTED_CHANGELOG="* [0648062] Bump git from 1.5.0 to 1.11.0
+            * [12633f8] Tool-248 firebase (#7)
+            * [9b77675] crashlitics
+            * [6f9cef3]  -
+            * [2777643]  -
+            * [dd88cd6] danger
+            * [ee76cdb] Scheme shared
+            * [89f7c82]  -
+            * [eb4f9b7] Initial Commit
             "
 
             if [ "$BITRISE_CHANGELOG" = "$EXPECTED_CHANGELOG" ]; then
