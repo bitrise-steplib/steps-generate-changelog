@@ -24,17 +24,15 @@ var tmplFuncMap = template.FuncMap{
 
 type changelog struct {
 	Commits     []git.Commit
-	Version     string
 	CurrentDate time.Time
 }
 
-func changelogContent(commits []git.Commit, version string) (string, error) {
+func changelogContent(commits []git.Commit) (string, error) {
 	sort.Slice(commits, func(i, j int) bool {
 		return commits[i].Date.After(commits[j].Date)
 	})
 	chlog := changelog{
 		Commits:     commits,
-		Version:     version,
 		CurrentDate: time.Now(),
 	}
 

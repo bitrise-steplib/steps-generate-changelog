@@ -15,31 +15,31 @@ type mockExporter struct {
 }
 
 // EnvKey ...
-func (e mockExporter) EnvKey() string {
+func (e mockExporter) EnvKey() string { //nolint
 	args := e.Called()
 	return args.String(0)
 }
 
 // Filepath ...
-func (e mockExporter) Filepath() string {
+func (e mockExporter) Filepath() string { //nolint
 	args := e.Called()
 	return args.String(0)
 }
 
 // WriteFile ...
-func (e mockExporter) WriteFile(content string) error {
+func (e mockExporter) WriteFile(content string) error { //nolint
 	args := e.Called(content)
 	return args.Error(0)
 }
 
 // ExportEnv ...
-func (e mockExporter) ExportEnv(value string) error {
+func (e mockExporter) ExportEnv(value string) error { //nolint
 	args := e.Called(value)
 	return args.Error(0)
 }
 
 // MaxEnvBytes ...
-func (e mockExporter) MaxEnvBytes() (int, error) {
+func (e mockExporter) MaxEnvBytes() (int, error) { //nolint
 	args := e.Called()
 	return args.Int(0), args.Error(1)
 }
@@ -56,7 +56,7 @@ func Test_exportChangelog(t *testing.T) {
 		mockExporter.On("MaxEnvBytes").Return(0, nil).Once()
 		mockExporter.On("ExportEnv", mockContent).Return(nil).Once()
 
-		require.NoError(t, exportChangelog(mockContent, mockExporter))
+		require.NoError(t, exportChangelog(mockContent, mockExporter)) //nolint
 
 		mockExporter.AssertExpectations(t)
 	})
@@ -73,7 +73,7 @@ func Test_exportChangelog(t *testing.T) {
 					content[len(content)-4:] == "\n..."
 			})).Return(nil).Once()
 
-		require.NoError(t, exportChangelog(mockContent, mockExporter))
+		require.NoError(t, exportChangelog(mockContent, mockExporter)) //nolint
 
 		mockExporter.AssertExpectations(t)
 	})
@@ -85,7 +85,7 @@ func Test_exportChangelog(t *testing.T) {
 		mockExporter.On("Filepath").Return("").Once()
 		mockExporter.On("WriteFile", mockContent).Return(errors.New("error")).Once()
 
-		require.Error(t, exportChangelog(mockContent, mockExporter))
+		require.Error(t, exportChangelog(mockContent, mockExporter)) //nolint
 
 		mockExporter.AssertExpectations(t)
 	})
@@ -97,7 +97,7 @@ func Test_exportChangelog(t *testing.T) {
 		mockExporter.On("WriteFile", mockContent).Return(nil).Once()
 		mockExporter.On("MaxEnvBytes").Return(0, errors.New("")).Once()
 
-		require.Error(t, exportChangelog(mockContent, mockExporter))
+		require.Error(t, exportChangelog(mockContent, mockExporter)) //nolint
 
 		mockExporter.AssertExpectations(t)
 	})
@@ -111,7 +111,7 @@ func Test_exportChangelog(t *testing.T) {
 		mockExporter.On("MaxEnvBytes").Return(0, nil).Once()
 		mockExporter.On("ExportEnv", mockContent).Return(errors.New("")).Once()
 
-		require.Error(t, exportChangelog(mockContent, mockExporter))
+		require.Error(t, exportChangelog(mockContent, mockExporter)) //nolint
 
 		mockExporter.AssertExpectations(t)
 	})

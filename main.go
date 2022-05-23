@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/bitrise-io/go-steputils/stepconf"
 	"github.com/bitrise-io/go-utils/log"
 	"github.com/bitrise-steplib/steps-generate-changelog/exporter"
 	"github.com/bitrise-steplib/steps-generate-changelog/git"
-	"github.com/bitrise-tools/go-steputils/stepconf"
 	"github.com/pkg/errors"
 )
 
@@ -18,7 +18,7 @@ func failf(format string, args ...interface{}) {
 	os.Exit(1)
 }
 
-func releaseCommits(dir, newVersion string) ([]git.Commit, error) {
+func releaseCommits(dir string) ([]git.Commit, error) {
 	startCommit, err := git.FirstCommit(dir)
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -66,7 +66,6 @@ func releaseCommits(dir, newVersion string) ([]git.Commit, error) {
 
 // Config ...
 type Config struct {
-	NewVersion    string `env:"new_version,required"`
 	ChangelogPath string `env:"changelog_pth,required"`
 	WorkDir       string `env:"working_dir,required"`
 }
@@ -113,12 +112,12 @@ func main() {
 	}
 	stepconf.Print(c)
 
-	commits, err := releaseCommits(c.WorkDir, c.NewVersion)
+	commits, err := releaseCommits(c.WorkDir)
 	if err != nil {
 		failf("Failed to get release commits, error: %v", err)
 	}
 
-	content, err := changelogContent(commits, c.NewVersion)
+	content, err := changelogContent(commits)
 	if err != nil {
 		failf("Failed to get changelog content, error: %s", err)
 	}
