@@ -1,3 +1,6 @@
 .bitrise*
 _tmp
 .envstore.yml
+.idea
+.vscode
+README.md.backup

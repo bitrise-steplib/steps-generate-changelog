@@ -7,7 +7,6 @@ app:
   - TEST_APP_BRANCH: master
   - WORKDIR: ./_tmp
 
-
 workflows:
   test_generate_changelog_by_commit:
     after_run:
