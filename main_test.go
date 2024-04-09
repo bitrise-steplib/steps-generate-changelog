@@ -131,7 +131,8 @@ func TestContentEscaping(t *testing.T) {
 	contentPath := filepath.Join(t.TempDir(), "changelog.md")
 	exporter := exporter.New(contentEnvKey, contentPath)
 	
-	exportChangelog(content, exporter)
+	err := exportChangelog(content, exporter)
+	require.NoError(t, err)
 
 	b, err := os.ReadFile(contentPath)
 	require.NoError(t, err)
