@@ -4,7 +4,7 @@ github.com/bitrise-io/envman/envman
 # github.com/bitrise-io/go-steputils v1.0.2
 ## explicit; go 1.15
 github.com/bitrise-io/go-steputils/stepconf
-# github.com/bitrise-io/go-steputils/v2 v2.0.0-alpha.28.0.20240409123735-cbb7a9f59990
+# github.com/bitrise-io/go-steputils/v2 v2.0.0-alpha.29
 ## explicit; go 1.17
 github.com/bitrise-io/go-steputils/v2/export
 # github.com/bitrise-io/go-utils v1.0.2

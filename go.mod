@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/bitrise-io/envman v0.0.0-20220512153504-166d59151b78
 	github.com/bitrise-io/go-steputils v1.0.2
-	github.com/bitrise-io/go-steputils/v2 v2.0.0-alpha.28.0.20240409123735-cbb7a9f59990
+	github.com/bitrise-io/go-steputils/v2 v2.0.0-alpha.29
 	github.com/bitrise-io/go-utils v1.0.2
 	github.com/bitrise-io/go-utils/v2 v2.0.0-alpha.20
 	github.com/pkg/errors v0.9.1
