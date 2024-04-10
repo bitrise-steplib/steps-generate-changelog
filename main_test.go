@@ -2,10 +2,13 @@ package main
 
 import (
 	"errors"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/bitrise-io/envman/envman"
+	"github.com/bitrise-steplib/steps-generate-changelog/exporter"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -115,4 +118,23 @@ func Test_exportChangelog(t *testing.T) {
 
 		mockExporter.AssertExpectations(t)
 	})
+}
+
+func TestContentEscaping(t *testing.T) {
+	content := `This is a changelog with some env vars:
+- $BITRISE_BUILD_NUMBER
+- $HOME
+- $PWD
+- $SHELL
+`
+	contentEnvKey := "TEST_CHANGELOG_CONTENT"
+	contentPath := filepath.Join(t.TempDir(), "changelog.md")
+	exporter := exporter.New(contentEnvKey, contentPath)
+	
+	err := exportChangelog(content, exporter)
+	require.NoError(t, err)
+
+	b, err := os.ReadFile(contentPath)
+	require.NoError(t, err)
+	require.Equal(t, content, string(b))
 }
