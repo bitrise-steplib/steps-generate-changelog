@@ -27,7 +27,7 @@ func (e EnvAndFile) WriteFile(content string) error {
 }
 
 func (e EnvAndFile) ExportEnv(value string) error {
-	// Do not expand env vars in the generated changelog because it the input is beyond the control of the step,
+	// Do not expand env vars in the generated changelog because the input is beyond the control of the step,
 	// and it could lead to surprising behavior.
 	return e.exporter.ExportOutputNoExpand(e.EnvKey(), value)
 }
