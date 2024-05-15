@@ -86,7 +86,8 @@ func parseCommit(out string) (Commit, error) {
 }
 
 // TaggedCommits ...
-func TaggedCommits(repoDir string) ([]Commit, error) {
+// To get all tags without date check, pass: time.Time{}
+func TaggedCommits(repoDir string, beforeDate time.Time) ([]Commit, error) {
 	cmd := command.New("git", "tag", "--list").SetDir(repoDir)
 	out, err := cmd.RunAndReturnTrimmedCombinedOutput()
 	if err != nil {
@@ -113,6 +114,12 @@ func TaggedCommits(repoDir string) ([]Commit, error) {
 		}
 		commit.Tag = tag
 
+		// if beforeDate was set, check and skip if the tag is newer
+		if !beforeDate.IsZero() {
+			if commit.Date.After(beforeDate) {
+				continue;
+			}
+		}
 		taggedCommits = append(taggedCommits, commit)
 	}
 

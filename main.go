@@ -29,17 +29,27 @@ func releaseCommits(dir string) ([]git.Commit, error) {
 		return nil, errors.WithStack(err)
 	}
 
-	taggedCommits, err := git.TaggedCommits(dir)
+	taggedCommits, err := git.TaggedCommits(dir, endCommit.Date)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
 	includeFirst := true
-	if len(taggedCommits) > 1 {
-		// collecting changelog between existing versions
-		startCommit = taggedCommits[len(taggedCommits)-2]
-		endCommit = taggedCommits[len(taggedCommits)-1]
-		includeFirst = false
+	if len(taggedCommits) > 0 {
+		// there is at least one version
+		if endCommit.Hash != taggedCommits[len(taggedCommits)-1].Hash {
+			// last commit is not the same as the last tag
+			// collecting changelog since last version
+			startCommit = taggedCommits[len(taggedCommits)-1]
+			includeFirst = false
+		} else if len(taggedCommits) > 1 {
+			// last commit has a tag and there are at least two versions
+			// collecting changelog between last two versions
+			startCommit = taggedCommits[len(taggedCommits)-2]
+			includeFirst = false
+		}
+		// otherwise there is only one tag and is on the last commit
+		// nothing to do here, will collect all commits
 	}
 
 	commits, err := git.Commits(dir)
