@@ -4,14 +4,46 @@ default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 app:
   envs:
   - TEST_APP_URL: https://github.com/bitrise-io/iOS-Sample.git
-  - TEST_APP_BRANCH: master
   - WORKDIR: ./_tmp
 
 workflows:
   test_generate_changelog_by_commit:
+    envs:
+    - TEST_APP_BRANCH: master
+    - EXPECTED_CHANGELOG: |
+        * [0648062] Bump git from 1.5.0 to 1.11.0
+        * [12633f8] Tool-248 firebase (#7)
+        * [9b77675] crashlitics
+        * [6f9cef3]  -
+        * [2777643]  -
+        * [dd88cd6] danger
+        * [ee76cdb] Scheme shared
+        * [89f7c82]  -
+        * [eb4f9b7] Initial Commit
     after_run:
     - _run
     - _check_changelog
+
+  test_env_vars_in_commits:
+    envs:
+    - TEST_APP_BRANCH: e2e/commit-with-env-var
+    - EXPECTED_CHANGELOG: |
+        * [a4a0294] This is a commit with an env var: $HOME
+        * [0648062] Bump git from 1.5.0 to 1.11.0
+        * [12633f8] Tool-248 firebase (#7)
+        * [9b77675] crashlitics
+        * [6f9cef3]  -
+        * [2777643]  -
+        * [dd88cd6] danger
+        * [ee76cdb] Scheme shared
+        * [89f7c82]  -
+        * [eb4f9b7] Initial Commit
+      opts:
+        is_expand: false
+    after_run:
+    - _run
+    - _check_changelog
+
   _run:
     steps:
     - script:
@@ -38,17 +70,6 @@ workflows:
         - content: |-
             #!/bin/env bash
             set -ex
-
-            EXPECTED_CHANGELOG="* [0648062] Bump git from 1.5.0 to 1.11.0
-            * [12633f8] Tool-248 firebase (#7)
-            * [9b77675] crashlitics
-            * [6f9cef3]  -
-            * [2777643]  -
-            * [dd88cd6] danger
-            * [ee76cdb] Scheme shared
-            * [89f7c82]  -
-            * [eb4f9b7] Initial Commit
-            "
 
             if [ "$BITRISE_CHANGELOG" = "$EXPECTED_CHANGELOG" ]; then
                 echo "Expected changelog generated."

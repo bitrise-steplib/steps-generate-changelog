@@ -2,37 +2,36 @@ package exporter
 
 import (
 	"github.com/bitrise-io/envman/envman"
-	"github.com/bitrise-io/go-steputils/tools"
+	"github.com/bitrise-io/go-steputils/v2/export"
 	"github.com/bitrise-io/go-utils/fileutil"
+	"github.com/bitrise-io/go-utils/v2/command"
+	"github.com/bitrise-io/go-utils/v2/env"
 )
 
-// EnvAndFile ...
 type EnvAndFile struct {
 	envKey, filepath string
+	exporter export.Exporter
 }
 
-// New ...
 func New(envKey, filepath string) EnvAndFile {
-	return EnvAndFile{envKey: envKey, filepath: filepath}
+	exporter := export.NewExporter(command.NewFactory(env.NewRepository()))
+	return EnvAndFile{envKey: envKey, filepath: filepath, exporter: exporter}
 }
 
-// EnvKey ...
 func (e EnvAndFile) EnvKey() string { return e.envKey }
 
-// Filepath ...
 func (e EnvAndFile) Filepath() string { return e.filepath }
 
-// WriteFile ...
 func (e EnvAndFile) WriteFile(content string) error {
 	return fileutil.WriteStringToFile(e.Filepath(), content)
 }
 
-// ExportEnv ...
 func (e EnvAndFile) ExportEnv(value string) error {
-	return tools.ExportEnvironmentWithEnvman(e.EnvKey(), value)
+	// Do not expand env vars in the generated changelog because the input is beyond the control of the step,
+	// and it could lead to surprising behavior.
+	return e.exporter.ExportOutputNoExpand(e.EnvKey(), value)
 }
 
-// MaxEnvBytes ...
 func (e EnvAndFile) MaxEnvBytes() (int, error) {
 	envmanConfigs, err := envman.GetConfigs()
 	if err != nil {
